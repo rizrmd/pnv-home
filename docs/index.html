@@ -4,10 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>pnv — Automate the browser. No code. No surprises.</title>
-<meta name="description" content="pnv records everything you do in a cloud browser, lets you select the steps you want to repeat, and replays them exactly — every time. No code. No AI.">
+<meta name="description" content="pnv records everything you do in a cloud browser, lets you select the steps you want to repeat, and replays them exactly — every time. No code. Consistent AI.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="assets/logo%20pnv.png">
 
 <style id="tokens">
@@ -46,7 +46,7 @@
   a{color:inherit;text-decoration:none}
   img{display:block;max-width:100%}
   .container{width:100%;max-width:1240px;margin:0 auto;padding:0 32px}
-  .mono{font-family:'JetBrains Mono', ui-monospace, monospace}
+  .mono{font-family:ui-monospace, Cascadia Code, SFMono-Regular, Menlo, monospace}
 
   /* ── nav ─────────────────────────────────────────────── */
   nav.top{
@@ -60,7 +60,7 @@
   .sys{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.18em;
     color:var(--ink-70);text-transform:uppercase}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--green);
-    box-shadow:0 0 8px rgba(22,163,74,0.5);animation:blink 1.8s ease-in-out infinite}
+    box-shadow:0 0 6px rgba(22,163,74,0.4)}
   @keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
   .nav-links{display:flex;gap:28px;font-size:14px;color:var(--ink-70)}
   .nav-links a:hover{color:var(--accent)}
@@ -82,7 +82,7 @@
 
   /* ── section label ───────────────────────────────────── */
   .slabel{display:inline-flex;align-items:center;gap:14px;color:var(--accent);
-    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;
+    font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.22em;
     text-transform:uppercase;font-weight:500}
   .slabel::before{content:"";width:28px;height:1px;background:var(--accent)}
 
@@ -111,14 +111,12 @@
   .tier.featured .price span{color:rgba(255,255,255,0.4)}
   .tier.featured .btn-primary{background:var(--accent);color:#fff}
   .tier.featured .btn-primary:hover{background:var(--accent-bright)}
-  .tier.featured::before{content:"RECOMMENDED";position:absolute;top:-10px;left:32px;
-    background:var(--accent);color:#fff;font-family:'JetBrains Mono',monospace;
-    font-size:10px;letter-spacing:.22em;padding:3px 10px}
-  .tier .name{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;
+  .tier.featured::before{content:none}
+  .tier .name{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.22em;
     text-transform:uppercase;color:var(--ink-30)}
   .tier .price{display:flex;align-items:baseline;gap:6px;margin:18px 0 6px}
   .tier .price b{font-size:48px;font-weight:700;letter-spacing:-0.03em;color:var(--ink)}
-  .tier .price span{color:var(--ink-30);font-size:13px;font-family:'JetBrains Mono',monospace}
+  .tier .price span{color:var(--ink-30);font-size:13px;font-family:ui-monospace,monospace}
   .tier .lede{color:var(--ink-70);font-size:14px;margin:0 0 24px;min-height:42px}
   .tier ul{list-style:none;padding:0;margin:24px 0 28px;display:flex;flex-direction:column;gap:10px}
   .tier li{display:flex;gap:10px;font-size:14px;color:var(--ink-70);align-items:flex-start}
@@ -131,7 +129,7 @@
   .faq-q{display:flex;align-items:center;justify-content:space-between;
     padding:22px 0;cursor:pointer;font-size:17px;font-weight:500;letter-spacing:-0.01em;color:var(--ink)}
   .faq-icn{width:24px;height:24px;border:1px solid var(--accent-border);color:var(--accent);
-    display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;
+    display:flex;align-items:center;justify-content:center;font-family:ui-monospace,monospace;
     transition:all .25s ease;flex:none;margin-left:24px}
   .faq-item.open .faq-icn{background:var(--accent);color:#fff;border-color:var(--accent)}
   .faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;
@@ -167,7 +165,7 @@
   footer .left b{color:var(--ink);font-weight:600}
   footer .links{display:flex;gap:24px;font-size:13px;color:var(--ink-70)}
   footer .links a:hover{color:var(--accent)}
-  footer .built{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;
+  footer .built{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.14em;
     color:var(--ink-30);text-transform:uppercase}
 
   /* ── responsive ──────────────────────────────────────── */
@@ -246,7 +244,7 @@
   .browser-mock-bar .dots i:nth-child(3){background:#28c840}
   .browser-mock-url{flex:1;max-width:380px;margin:0 auto;padding:6px 12px;
     background:#f4f4f7;color:var(--ink-30);
-    font-size:11px;border-radius:6px;font-family:'JetBrains Mono',monospace;
+    font-size:11px;border-radius:6px;font-family:ui-monospace,monospace;
     display:flex;align-items:center;gap:8px}
   .browser-mock-url svg{width:11px;height:11px;flex:none;color:var(--ink-30)}
   .prod-url-host{color:var(--ink)}
@@ -261,10 +259,10 @@
   .rec-pill{display:inline-flex;align-items:center;gap:8px;
     padding:7px 14px;background:#fff;color:var(--ink);font-size:12px;
     border:1px solid rgba(10,10,10,0.1);border-radius:999px;
-    font-family:'JetBrains Mono',monospace;box-shadow:0 6px 18px rgba(10,10,10,0.08);
+    font-family:ui-monospace,monospace;box-shadow:0 6px 18px rgba(10,10,10,0.08);
     font-weight:500;z-index:2}
   .rec-pill .rec-dot{width:8px;height:8px;border-radius:50%;background:#ef4444;
-    box-shadow:0 0 8px rgba(239,68,68,0.5);animation:blink 1.2s ease-in-out infinite}
+    box-shadow:0 0 6px rgba(239,68,68,0.4)}
   .rec-pill-tabbed{position:absolute;top:-22px;right:32px}
   .hero-glow{position:absolute;left:50%;bottom:-30px;transform:translateX(-50%);
     width:80%;height:80px;background:radial-gradient(ellipse at center,var(--accent-glow),transparent 70%);
@@ -274,7 +272,7 @@
 
   /* ───────── TRUSTED BY ───────── */
   .trusted{padding:48px 0 24px;text-align:center}
-  .trusted-label{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.24em;
+  .trusted-label{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.24em;
     text-transform:uppercase;color:var(--ink-30);margin-bottom:24px}
   .trusted-row{display:flex;justify-content:space-around;align-items:center;flex-wrap:wrap;gap:32px}
   .trusted-logo{display:inline-flex;align-items:center;gap:10px;color:var(--ink-30);
@@ -408,7 +406,7 @@
   .f8-stack{position:absolute;inset:18px;display:flex;flex-direction:column;gap:6px}
   .f8-stack-row{display:flex;align-items:center;gap:8px;
     background:#fff;border:1px solid rgba(10,10,10,0.08);border-radius:6px;
-    padding:7px 10px;font-size:11px;color:var(--ink-70);font-family:'JetBrains Mono',monospace;
+    padding:7px 10px;font-size:11px;color:var(--ink-70);font-family:ui-monospace,monospace;
     box-shadow:0 2px 6px rgba(10,10,10,0.03);transform:translateX(8px);width:88%}
   .f8-stack-row:nth-child(2){transform:translateX(4px);width:92%}
   .f8-stack-row:nth-child(3){transform:translateX(0);width:96%}
@@ -457,11 +455,11 @@
     box-shadow:0 4px 10px rgba(10,10,10,0.04);font-size:9px}
   .f8-dash-head{display:flex;justify-content:space-between;padding:6px 10px;
     background:#fafafa;border-bottom:1px solid #e5e5e8;
-    font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;
+    font-family:ui-monospace,monospace;font-size:8px;letter-spacing:.1em;
     text-transform:uppercase;color:var(--ink-30)}
   .f8-dash-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:7px 10px;
     border-bottom:1px solid #f4f4f7;align-items:center;position:relative;
-    font-family:'JetBrains Mono',monospace;color:var(--ink)}
+    font-family:ui-monospace,monospace;color:var(--ink)}
   .f8-dash-row .f8-bar{grid-column:1 / -1;height:3px;background:#e5e5e8;border-radius:2px;
     overflow:hidden;margin-top:4px}
   .f8-dash-row .f8-bar i{display:block;height:100%;background:var(--accent)}
@@ -469,7 +467,7 @@
     font-size:8px;font-weight:500}
   .f8-pill.green{background:#dcfce7;color:#16a34a}
   .f8-dash-foot{padding:6px 10px;background:#fafafa;border-top:1px solid #e5e5e8;
-    color:var(--ink-70);font-family:'JetBrains Mono',monospace;font-size:8px}
+    color:var(--ink-70);font-family:ui-monospace,monospace;font-size:8px}
 
   /* ───────── ZERO SETUP ───────── */
   .zero{padding:96px 0}
@@ -536,10 +534,10 @@
     display:flex;flex-direction:column;gap:8px}
   .zero-runner-bar{display:flex;align-items:center;gap:8px;
     background:#f4f4f7;border-radius:6px;padding:8px 10px;
-    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-70)}
+    font-family:ui-monospace,monospace;font-size:11px;color:var(--ink-70)}
   .zero-runner-bar svg{width:11px;height:11px;color:var(--ink-70)}
   .zero-runner-step{display:flex;justify-content:space-between;font-size:11px;
-    padding:5px 4px;border-bottom:1px dashed rgba(10,10,10,0.06);font-family:'JetBrains Mono',monospace}
+    padding:5px 4px;border-bottom:1px dashed rgba(10,10,10,0.06);font-family:ui-monospace,monospace}
   .zero-runner-step:last-of-type{border-bottom:0}
   .zero-runner-step b{color:var(--ink);font-weight:600}
   .zero-runner-step i{color:var(--accent);font-style:normal}
@@ -548,7 +546,7 @@
 
   .zero-meta h3{font-size:18px;font-weight:600;letter-spacing:-0.015em;
     margin:0 0 8px;color:var(--ink);display:flex;align-items:baseline;gap:10px}
-  .zero-num{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600}
+  .zero-num{color:var(--accent);font-family:ui-monospace,monospace;font-size:15px;font-weight:600}
   .zero-meta p{color:var(--ink-70);font-size:14.5px;margin:0;line-height:1.6;max-width:340px}
 
   /* ───────── DON'T USE THE WEB. SCALE IT. ───────── */
@@ -569,11 +567,11 @@
   .scale-stat{grid-column:1 / -1;grid-row:2;align-self:end;
     margin-top:80px;position:relative;z-index:2}
   .scale-stat-label{display:inline-flex;align-items:center;gap:10px;
-    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;
+    font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.18em;
     text-transform:uppercase;color:var(--ink);margin-bottom:14px}
   .scale-stat-marker{display:inline-block;width:10px;height:14px;background:#ec4899}
   .scale-stat-period{padding:2px 8px;background:#dbeafe;color:var(--ink);
-    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:none}
+    font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:none}
   .scale-stat-num{font-size:clamp(64px,11vw,170px);font-weight:800;letter-spacing:-0.04em;
     line-height:0.95;color:var(--ink);font-family:'Space Grotesk',sans-serif;
     background:#dbeafe;display:inline-block;padding:6px 16px;margin-left:-6px}
@@ -612,7 +610,6 @@
     <a href="#" class="brand">
       <span class="logo"></span>
     </a>
-    <div class="sys"><span class="dot"></span>System Online · v1.0</div>
     <div class="nav-links">
       <a href="#features">Features</a>
       <a href="#how-it-works">How it works</a>
@@ -633,9 +630,9 @@
       <div class="hero-copy">
         <h1>
           Automate<br>the browser.
-          <span class="h1-muted"><span class="glitch" data-text="No code. No AI.">No code. No AI.</span><br>No surprises.</span>
+          <span class="h1-muted"><span class="glitch" data-text="No code. Consistent AI.">No code. Consistent AI.</span><br>No surprises.</span>
         </h1>
-        <p class="hero-desc">pnv records everything you do in a cloud browser, lets you select the steps you want to repeat, and replays them exactly — every time.</p>
+        <p class="hero-desc">pnv records everything you do in a cloud browser, lets you select the steps you want to repeat, and replays them exactly, every time.</p>
       </div>
       <div class="hero-mock">
         <div class="browser-mock">
@@ -691,8 +688,8 @@
   <div class="container">
     <div class="behave-card">
       <div>
-        <h2>Finally,<br>automation<br>that behaves.</h2>
-        <p>No brittle scripts. No guessing. Just do, select, and replay — exactly as you did it.</p>
+        <h2>Automation<br>that does exactly<br>what you recorded.</h2>
+        <p>No scripts. No prompts. Record once, replay on demand.</p>
       </div>
       <div class="behave-steps">
         <div class="behave-step">
@@ -784,9 +781,9 @@
 <!-- ───────── FEATURES ───────── -->
 <section id="features">
   <div class="container">
-    <span class="slabel">Section 03 · What pnv unlocks</span>
+    <span class="slabel">What pnv unlocks</span>
     <h2 class="sec-h">Anything you can do in a browser, <span style="color:var(--accent)">pnv can too.</span></h2>
-    <p class="sec-sub">Automate what's tedious. Accelerate what's ambitious.</p>
+    <p class="sec-sub">For testing, ops, and data extraction.</p>
 
     <div class="feat8-grid">
       <div class="feat8-card">
@@ -919,7 +916,7 @@
 <!-- ───────── ZERO SETUP ───────── -->
 <section class="zero">
   <div class="container">
-    <span class="slabel">Section 04 · How it works</span>
+    <span class="slabel">How it works</span>
     <h2 class="zero-h">Zero setup. <span style="color:var(--accent)">Real results.</span></h2>
     <p class="zero-sub">Spin up a browser, record your flow, and replay it anywhere — webhook, cron, or one-click run.</p>
 
@@ -977,7 +974,7 @@
         </div>
         <div class="zero-meta">
           <h3><span class="zero-num">3</span> Replay anywhere</h3>
-          <p>Trigger via webhook, cron, or API. Pass fresh variables each time. Get the same reliable result — every single run.</p>
+          <p>Trigger via webhook, cron, or API. Pass fresh variables each time. Get the same result, every single run.</p>
         </div>
       </div>
     </div>
@@ -988,7 +985,7 @@
 <section class="scale-it" id="how-it-works">
   <div class="scale-grid">
     <div class="scale-copy">
-      <span class="slabel">Section 05 · By the numbers</span>
+      <span class="slabel">By the numbers</span>
       <h2 class="scale-h"><span class="scale-h-hl">Don't use the web.<br>Scale it.</span></h2>
     </div>
     <div class="scale-art">
@@ -1032,7 +1029,7 @@
 <!-- ───────── PRICING ───────── -->
 <section id="pricing">
   <div class="container">
-    <span class="slabel">Section 06 · Pricing</span>
+    <span class="slabel">Pricing</span>
     <h2 class="sec-h">Honest pricing. Cancel any time. Self-host if you'd rather.</h2>
     <div class="price-grid">
       <div class="tier">
@@ -1078,7 +1075,7 @@
 <!-- ───────── FAQ ───────── -->
 <section id="faq">
   <div class="container">
-    <span class="slabel">Section 07 · FAQ</span>
+    <span class="slabel">FAQ</span>
     <h2 class="sec-h">Questions we kept hearing.</h2>
     <div class="faq-list">
       <div class="faq-item">
@@ -1109,8 +1106,7 @@
 <div class="container" id="cta">
   <div class="cta-wrap">
     <div class="grid-bg"></div>
-    <span class="slabel" style="position:relative;z-index:1">Begin transmission</span>
-    <h2>Your next automation is one interaction away.</h2>
+    <h2>Start automating your browser.</h2>
     <div class="hero-ctas">
       <a class="btn btn-primary" href="#">Get started free <span class="arr">→</span></a>
       <a class="btn btn-ghost" href="https://github.com/pnv-one">View on GitHub</a>
