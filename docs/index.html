@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pnv — A browser as a service</title>
+  <meta name="description" content="Record browser interactions. Turn them into reusable tasks. Replay exactly. No coding. No AI.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="https://pnv.one/favicon.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+    
+    :root {
+      --font-sans: 'Inter', system_ui, sans-serif;
+      --font-display: 'Space Grotesk', 'Inter', sans-serif;
+    }
+    
+    body {
+      font-family: var(--font-sans);
+    }
+    
+    .font-display {
+      font-family: var(--font-display);
+    }
+
+    .section {
+      scroll-margin-top: 4rem;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200">
+  <!-- Nav -->
+  <nav class="border-b border-white/10">
+    <div class="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded bg-white flex items-center justify-center">
+          <span class="text-zinc-950 font-semibold text-lg tracking-tighter">p</span>
+        </div>
+        <span class="font-semibold tracking-tight text-xl">pnv</span>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="#how" class="hover:text-white transition-colors">How it works</a>
+        <a href="#why" class="hover:text-white transition-colors">Why pnv</a>
+        <a href="https://github.com/rizrmd/pnv-home" 
+           class="text-zinc-400 hover:text-white transition-colors" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
+    <div class="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-1 text-xs tracking-[0.5px] text-zinc-400 mb-6">
+      PRE-RELEASE
+    </div>
+    
+    <h1 class="font-display text-6xl md:text-7xl tracking-tighter font-semibold leading-none mb-4">
+      A browser<br>as a service.
+    </h1>
+    
+    <p class="max-w-md mx-auto text-xl text-zinc-400 mb-8">
+      Replay exactly.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <a href="#waitlist" 
+         class="inline-flex items-center justify-center rounded-xl bg-white text-zinc-950 font-medium px-8 h-12 hover:bg-zinc-100 transition-colors">
+        Get early access
+      </a>
+      <a href="#how" 
+         class="inline-flex items-center justify-center rounded-xl border border-white/20 hover:bg-white/5 px-8 h-12 transition-colors">
+        See how it works
+      </a>
+    </div>
+    
+    <p class="mt-6 text-xs text-zinc-500">No credit card required • Free tier available</p>
+  </div>
+
+  <!-- How it works -->
+  <div id="how" class="section max-w-5xl mx-auto px-6 py-16 border-t border-white/10">
+    <div class="text-center mb-12">
+      <div class="text-xs tracking-[1px] text-emerald-400 font-medium mb-2">3 SIMPLE STEPS</div>
+      <h2 class="font-display text-4xl tracking-tight font-semibold">How it works</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="border border-white/10 rounded-2xl p-8">
+        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-medium mb-6">1</div>
+        <h3 class="font-semibold text-lg mb-3">Open a cloud browser</h3>
+        <p class="text-zinc-400">Spin up dedicated browser profiles with their own cookies and sessions. Do your work normally.</p>
+      </div>
+      
+      <div class="border border-white/10 rounded-2xl p-8">
+        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-medium mb-6">2</div>
+        <h3 class="font-semibold text-lg mb-3">Select steps from the transcript</h3>
+        <p class="text-zinc-400">Every click, type, and scroll is recorded. Pick the steps you want to automate. Inputs become variables automatically.</p>
+      </div>
+      
+      <div class="border border-white/10 rounded-2xl p-8">
+        <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-sm font-medium mb-6">3</div>
+        <h3 class="font-semibold text-lg mb-3">Replay the task</h3>
+        <p class="text-zinc-400">Run it on demand or on a schedule. Same result every time — deterministic, no AI guessing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why different -->
+  <div id="why" class="section max-w-5xl mx-auto px-6 py-16 border-t border-white/10 bg-zinc-900/50">
+    <div class="max-w-3xl">
+      <div class="text-xs tracking-[1px] text-emerald-400 font-medium mb-2">THE DIFFERENCE</div>
+      <h2 class="font-display text-4xl tracking-tight font-semibold mb-8">No code. No AI.<br>Exact.</h2>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-left">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="py-4 pr-6 text-zinc-400 font-normal">The old way</th>
+            <th class="py-4 pl-6 font-medium">pnv</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm">
+          <tr class="border-b border-white/10">
+            <td class="py-4 pr-6 text-zinc-400">Write and maintain Playwright / Selenium scripts</td>
+            <td class="py-4 pl-6">Just use a real browser. Select steps from transcript.</td>
+          </tr>
+          <tr class="border-b border-white/10">
+            <td class="py-4 pr-6 text-zinc-400">Prompt an LLM and hope it clicks the right thing</td>
+            <td class="py-4 pl-6">Exact replay. Deterministic. Every single time.</td>
+          </tr>
+          <tr>
+            <td class="py-4 pr-6 text-zinc-400">Brittle scripts that break on every UI change</td>
+            <td class="py-4 pl-6">Re-record the flow in 30 seconds when something changes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Waitlist / CTA -->
+  <div id="waitlist" class="section max-w-xl mx-auto px-6 py-20 text-center border-t border-white/10">
+    <h2 class="font-display text-4xl tracking-tight font-semibold mb-3">Ready to try pnv?</h2>
+    <p class="text-zinc-400 mb-8">We're rolling out access gradually. Join the waitlist for early access.</p>
+
+    <form class="flex flex-col sm:flex-row gap-3" action="https://formspree.io/f/your-form-id" method="POST">
+      <input 
+        type="email" 
+        name="email" 
+        placeholder="you@company.com" 
+        required
+        class="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-5 h-12 text-white placeholder:text-zinc-500 focus:outline-none focus:border-white/30">
+      <button 
+        type="submit"
+        class="bg-white hover:bg-zinc-100 transition-colors text-zinc-950 font-medium px-8 rounded-xl h-12">
+        Join waitlist
+      </button>
+    </form>
+    
+    <p class="text-[10px] text-zinc-500 mt-4">We'll only email you when you're invited. No spam.</p>
+  </div>
+
+  <footer class="border-t border-white/10 py-8">
+    <div class="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-y-4 text-xs text-zinc-500">
+      <div>© pnv. Replay exactly.</div>
+      <div class="flex gap-6">
+        <a href="https://github.com/rizrmd/pnv-home" class="hover:text-zinc-300" target="_blank">Source (private)</a>
+        <a href="https://github.com/rizrmd/pnv-home/blob/main/CONTEXT.md" class="hover:text-zinc-300" target="_blank">Context</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Tailwind script
+    function initializeTailwind() {
+      const style = document.createElement('style');
+      style.textContent = `
+        .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; letter-spacing: -0.02em; }
+      `;
+      document.head.appendChild(style);
+    }
+    initializeTailwind();
+  </script>
+</body>
+</html>
