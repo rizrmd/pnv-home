@@ -5,25 +5,33 @@
 
 ## What works
 
-<!-- Add patterns that drive engagement. Be specific: format, hook type, topic angle. -->
 - Benefit-first headlines convert better than feature-first. Short paragraphs.
 - Pages with a single clear CTA above the fold outperform pages with multiple competing actions
+- Dark, technical UI aesthetic (Watch Dogs ctOS style) fits the developer ICP — feels like a tool, not a marketing site
+- Terminal/transcript mockup in hero immediately communicates how the product works without a word of explanation
+- "No code. No AI. No surprises." — three-part negation works well for positioning against Playwright and AI agents simultaneously
+- Data-panel UI (task status readout) in the Solution section makes the value prop concrete and visual
+- Trust metrics as numbers (100%, 0, ∞) land harder than testimonial quotes for a technical audience
+- Monospace secondary text throughout signals "built for engineers" without saying it
 
 ## What doesn't work
 
-<!-- Add approaches to retire. Be specific about why they failed. -->
+- Vague social proof ("trusted by teams") has no credibility pre-launch — replaced with product-truth metrics instead
+- Fluffy adjectives ("powerful", "seamless") cut entirely in favor of specific claims
 
 ## Cadence
 
-<!-- How often to post. What timing works best. -->
+- Landing page: update when pricing, features, or positioning changes materially
 
 ## Audience
 
-<!-- Who reads this channel. What they care about. What makes them engage. -->
+- Primary: developers, QA engineers, ops engineers
+- They are skeptical of marketing — lead with how it works, not what it promises
+- "Deterministic" and "no AI in the execution path" are specific claims that resonate with this audience
+- They compare against Playwright/Selenium (code) and Browser Use/Browserbase (AI) — both must be addressed in the positioning
 
 ## Top performers
 
-<!-- Best pieces with performance data. Reference _examples/ files. -->
-
 | Post | Date | Metric | Notes |
 |------|------|--------|-------|
+| Landing page v1 | 2026-05-27 | — | First publish. Watch Dogs ctOS aesthetic. Full sections: hero, problem, solution, features, social proof, how it works, pricing, FAQ, CTA. |

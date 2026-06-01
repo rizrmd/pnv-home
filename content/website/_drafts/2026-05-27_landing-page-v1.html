@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pnv — Browser as a service</title>
+  <meta name="description" content="Automate the browser. No code. No AI. No surprises. pnv records your browser interactions and replays them exactly — every time.">
+  <meta property="og:title" content="pnv — Browser as a service">
+  <meta property="og:description" content="Automate the browser. No code. No AI. No surprises.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://pnv.one">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:          #07070f;
+      --bg-2:        #0c0c1a;
+      --bg-card:     #101020;
+      --blue:        #4ecde6;
+      --blue-bright: #00e5ff;
+      --blue-dim:    rgba(78, 205, 230, 0.08);
+      --blue-border: rgba(78, 205, 230, 0.22);
+      --blue-glow:   rgba(78, 205, 230, 0.35);
+      --white:       #eef2f7;
+      --white-70:    rgba(238, 242, 247, 0.65);
+      --white-30:    rgba(238, 242, 247, 0.28);
+      --border:      rgba(238, 242, 247, 0.07);
+      --red:         #ef4444;
+      --green:       #22c55e;
+      --mono:        'JetBrains Mono', monospace;
+      --sans:        'Space Grotesk', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scanlines */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.025) 2px,
+        rgba(0,0,0,0.025) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* ── Grid background ── */
+    .grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(78,205,230,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78,205,230,0.035) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* ── Corner accents ── */
+    .corner { position: absolute; width: 14px; height: 14px; }
+    .corner-tl { top: -4px; left: -4px; border-top: 2px solid var(--blue); border-left: 2px solid var(--blue); }
+    .corner-tr { top: -4px; right: -4px; border-top: 2px solid var(--blue); border-right: 2px solid var(--blue); }
+    .corner-bl { bottom: -4px; left: -4px; border-bottom: 2px solid var(--blue); border-left: 2px solid var(--blue); }
+    .corner-br { bottom: -4px; right: -4px; border-bottom: 2px solid var(--blue); border-right: 2px solid var(--blue); }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      letter-spacing: 0.03em;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    }
+    .btn-primary { background: var(--blue); color: #07070f; }
+    .btn-primary:hover { background: var(--blue-bright); transform: translateY(-1px); box-shadow: 0 0 24px var(--blue-glow); }
+    .btn-ghost { background: transparent; color: var(--white); border: 1px solid var(--blue-border); clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%); }
+    .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* ── Navbar ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      height: 60px;
+      padding: 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(7,7,15,0.82);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    /* Swap img src to your actual logo file */
+    .nav-logo img { height: 26px; width: auto; filter: invert(1) brightness(2); }
+    .nav-logo-text {
+      font-family: var(--mono);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--blue);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .pulse {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--blue);
+      animation: blink 1.8s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--white-30);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+
+    /* ── Section base ── */
+    .section {
+      position: relative;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 96px 48px;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .section-label::before { content: ''; width: 28px; height: 1px; background: var(--blue); }
+
+    h2 {
+      font-size: clamp(26px, 3.8vw, 48px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin-bottom: 18px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--white-70);
+      max-width: 520px;
+      line-height: 1.75;
+      margin-bottom: 60px;
+    }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 48px 80px;
+      overflow: hidden;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      border: 1px solid var(--blue-border);
+      background: var(--blue-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--blue);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    .hero h1 {
+      font-size: clamp(38px, 6.5vw, 84px);
+      font-weight: 700;
+      line-height: 1.03;
+      letter-spacing: -0.04em;
+      max-width: 860px;
+      margin-bottom: 28px;
+    }
+    .h1-blue { color: var(--blue); }
+
+    /* Glitch */
+    .glitch { position: relative; display: inline-block; }
+    .glitch::before, .glitch::after {
+      content: attr(data-text);
+      position: absolute;
+      top: 0; left: 0;
+      color: var(--blue);
+      width: 100%;
+    }
+    .glitch::before {
+      animation: g1 6s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 42%, 0 42%);
+      transform: translate(-2px);
+      opacity: 0.7;
+    }
+    .glitch::after {
+      animation: g2 6s infinite;
+      clip-path: polygon(0 56%, 100% 56%, 100% 100%, 0 100%);
+      transform: translate(2px);
+      opacity: 0.7;
+    }
+    @keyframes g1 {
+      0%,88%,100%{opacity:0;transform:translate(0)}
+      90%{opacity:.7;transform:translate(-3px,1px)}
+      92%{opacity:.7;transform:translate(3px,-1px)}
+      94%{opacity:.7;transform:translate(-1px,2px)}
+      96%{opacity:0}
+    }
+    @keyframes g2 {
+      0%,88%,100%{opacity:0;transform:translate(0)}
+      90%{opacity:.7;transform:translate(3px,-1px)}
+      92%{opacity:.7;transform:translate(-3px,1px)}
+      94%{opacity:.7;transform:translate(2px,-2px)}
+      96%{opacity:0}
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      color: var(--white-70);
+      max-width: 520px;
+      margin: 0 auto 48px;
+      line-height: 1.75;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin-bottom: 80px;
+    }
+
+    .hero-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--white-30);
+      letter-spacing: 0.06em;
+      margin-top: 16px;
+    }
+
+    /* ── Terminal mockup ── */
+    .terminal {
+      position: relative;
+      width: 100%;
+      max-width: 760px;
+      background: var(--bg-2);
+      border: 1px solid var(--blue-border);
+      text-align: left;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .terminal-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--white-30);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .dots { display: flex; gap: 6px; }
+    .dots span { width: 8px; height: 8px; border-radius: 50%; }
+    .terminal-body { padding: 20px 22px; }
+
+    .t-row {
+      display: grid;
+      grid-template-columns: 28px 120px 1fr 72px;
+      gap: 12px;
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.025);
+      font-family: var(--mono);
+      font-size: 12.5px;
+      align-items: center;
+    }
+    .t-row.header { color: var(--white-30); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .t-row.sel { background: rgba(78,205,230,0.07); border-left: 2px solid var(--blue); margin-left: -10px; padding-left: 8px; margin-right: -10px; padding-right: 10px; }
+    .t-idx { color: var(--blue); font-weight: 700; }
+    .t-action { color: var(--white-70); }
+    .t-detail { color: var(--white-30); }
+    .t-detail .var { color: var(--blue); }
+    .t-ok { color: var(--green); font-weight: 600; font-size: 11px; }
+    .t-sel-label { color: var(--blue); font-weight: 600; font-size: 11px; }
+
+    .terminal-footer {
+      padding: 12px 22px;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .terminal-footer .convert {
+      background: var(--blue);
+      color: var(--bg);
+      padding: 4px 12px;
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .terminal-footer .convert:hover { background: var(--blue-bright); }
+
+    /* ── Problem ── */
+    .prob-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .prob-card {
+      background: var(--bg-2);
+      padding: 40px 32px;
+      position: relative;
+    }
+    .prob-num {
+      position: absolute;
+      top: 20px; right: 20px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--white-30);
+      letter-spacing: 0.1em;
+    }
+    .prob-icon {
+      width: 44px; height: 44px;
+      border: 1px solid rgba(239,68,68,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--red);
+      margin-bottom: 24px;
+    }
+    .prob-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.01em; }
+    .prob-card p { font-size: 14px; color: var(--white-70); line-height: 1.75; }
+
+    /* ── Solution ── */
+    .sol-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 72px;
+      align-items: center;
+    }
+    .sol-text p { font-size: 15px; color: var(--white-70); line-height: 1.8; margin-bottom: 14px; }
+
+    .data-panel {
+      position: relative;
+      background: var(--bg-2);
+      border: 1px solid var(--blue-border);
+      padding: 28px;
+    }
+    .data-panel-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--blue);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 12.5px;
+    }
+    .data-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .d-key { color: var(--white-30); }
+    .d-val { font-weight: 500; }
+    .d-val.blue { color: var(--blue); }
+    .d-val.green { color: var(--green); }
+    .d-val.red { color: var(--red); }
+    .progress-wrap { margin-top: 8px; width: 100%; }
+    .progress-track { height: 2px; background: var(--border); position: relative; }
+    .progress-fill {
+      position: absolute;
+      left: 0; top: 0; height: 100%;
+      background: var(--blue);
+      animation: fillup 1.8s ease-out forwards;
+    }
+    @keyframes fillup { from{width:0} to{width:var(--w)} }
+    .prog-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .prog-meta { display: flex; justify-content: space-between; width: 100%; font-size: 11px; }
+
+    /* ── Features ── */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .feat-card {
+      background: var(--bg-card);
+      padding: 40px 32px;
+      position: relative;
+      transition: background 0.25s;
+    }
+    .feat-card:hover { background: var(--bg-2); }
+    .feat-card.wide { grid-column: span 2; }
+    .feat-num {
+      position: absolute;
+      top: 20px; right: 20px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--white-30);
+      letter-spacing: 0.1em;
+    }
+    .feat-icon {
+      width: 48px; height: 48px;
+      border: 1px solid var(--blue-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      margin-bottom: 24px;
+      transition: all 0.25s;
+    }
+    .feat-card:hover .feat-icon { border-color: var(--blue); box-shadow: 0 0 16px var(--blue-glow); }
+    .feat-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 12px; letter-spacing: -0.01em; }
+    .feat-card p { font-size: 14px; color: var(--white-70); line-height: 1.75; }
+
+    /* ── Social proof ── */
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 48px;
+    }
+    .trust-card {
+      background: var(--bg-2);
+      padding: 36px 32px;
+      position: relative;
+    }
+    .trust-metric {
+      font-family: var(--mono);
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--blue);
+      margin-bottom: 8px;
+      letter-spacing: -0.03em;
+    }
+    .trust-label { font-size: 14px; color: var(--white-70); line-height: 1.6; }
+
+    .quote-block {
+      background: var(--bg-2);
+      border: 1px solid var(--blue-border);
+      border-left: 3px solid var(--blue);
+      padding: 32px;
+      position: relative;
+    }
+    .quote-text {
+      font-size: 16px;
+      color: var(--white-70);
+      line-height: 1.8;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    .quote-author {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--white-30);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── How it works ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      position: relative;
+      gap: 0;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(12.5% + 16px);
+      right: calc(12.5% + 16px);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--blue-border) 20%, var(--blue) 50%, var(--blue-border) 80%, transparent);
+    }
+    .step { padding: 0 24px; text-align: center; }
+    .step-num {
+      width: 56px; height: 56px;
+      border: 1px solid var(--blue-border);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--blue);
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      position: relative;
+    }
+    .step h3 { font-size: 15px; font-weight: 600; margin-bottom: 10px; letter-spacing: -0.01em; }
+    .step p { font-size: 13px; color: var(--white-70); line-height: 1.75; }
+
+    /* ── Pricing ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .pricing-card {
+      background: var(--bg-2);
+      padding: 40px 32px;
+      position: relative;
+    }
+    .pricing-card.featured {
+      background: var(--bg-card);
+      border-top: 2px solid var(--blue);
+    }
+    .pricing-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--blue);
+      border: 1px solid var(--blue-border);
+      padding: 3px 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .pricing-tier {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--white-30);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .pricing-price {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .pricing-price sub { font-size: 16px; font-weight: 400; color: var(--white-30); }
+    .pricing-desc { font-size: 13px; color: var(--white-30); margin-bottom: 32px; }
+    .pricing-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
+    .pricing-items { list-style: none; margin-bottom: 40px; }
+    .pricing-items li {
+      font-size: 14px;
+      color: var(--white-70);
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pricing-items li::before { content: '▸'; color: var(--blue); font-size: 10px; flex-shrink: 0; }
+    .pricing-note {
+      text-align: center;
+      margin-top: 24px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--white-30);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── FAQ ── */
+    .faq { max-width: 700px; margin-top: 48px; }
+    .faq-item { border-bottom: 1px solid var(--border); }
+    .faq-q {
+      width: 100%;
+      background: none;
+      border: none;
+      color: var(--white);
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 500;
+      text-align: left;
+      padding: 22px 0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      letter-spacing: -0.01em;
+    }
+    .faq-icon {
+      width: 24px; height: 24px;
+      border: 1px solid var(--blue-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--blue);
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .faq-item.open .faq-icon { background: var(--blue); color: var(--bg); border-color: var(--blue); }
+    .faq-a {
+      font-size: 14px;
+      color: var(--white-70);
+      line-height: 1.8;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.25s;
+    }
+    .faq-item.open .faq-a { max-height: 280px; padding-bottom: 24px; }
+
+    /* ── CTA ── */
+    .cta-wrap {
+      position: relative;
+      text-align: center;
+      padding: 120px 48px;
+      overflow: hidden;
+    }
+    .cta-wrap .grid-bg { opacity: 0.5; }
+    .cta-glow {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(78,205,230,0.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-wrap .section-label { justify-content: center; }
+    .cta-wrap h2 { font-size: clamp(32px,5vw,62px); max-width: 680px; margin: 0 auto 18px; }
+    .cta-wrap p { font-size: 17px; color: var(--white-70); max-width: 440px; margin: 0 auto 48px; }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; }
+    .cta-note { margin-top: 24px; font-family: var(--mono); font-size: 11px; color: var(--white-30); letter-spacing: 0.08em; }
+
+    /* ── Footer ── */
+    .footer-wrap { border-top: 1px solid var(--border); }
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-brand { font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--white); }
+    .footer-sub { font-size: 13px; color: var(--white-30); margin-top: 4px; }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 13px; color: var(--white-30); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--blue); }
+
+    /* ── Responsive ── */
+    @media(max-width:960px){
+      nav { padding: 0 24px; }
+      .nav-links, .nav-status { display: none; }
+      .hero { padding: 100px 24px 60px; }
+      .section { padding: 64px 24px; }
+      .hero h1 { font-size: 36px; }
+      .hero-ctas, .cta-btns { flex-direction: column; align-items: center; }
+      .prob-grid, .feat-grid, .pricing-grid, .trust-grid { grid-template-columns: 1fr; }
+      .sol-grid { grid-template-columns: 1fr; gap: 40px; }
+      .steps { grid-template-columns: 1fr 1fr; }
+      .steps::before { display: none; }
+      .feat-card.wide { grid-column: span 1; }
+      footer { flex-direction: column; gap: 24px; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════ NAV ══════════════════════════════════════ -->
+<nav>
+  <a href="#" class="nav-logo">
+    <!--
+      Logo file: replace src with your actual logo path.
+      If using Logo_1.png (dark logo), keep filter: invert(1).
+      If using a white logo variant, remove the filter.
+    -->
+    <img src="Logo_1.png" alt="pnv" onerror="this.style.display='none'">
+    <span class="nav-logo-text">pnv</span>
+  </a>
+  <div class="nav-status">
+    <span class="pulse"></span>
+    SYSTEM ONLINE
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how-it-works">How it works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="https://pnv.one" class="btn btn-primary">Start free</a>
+</nav>
+
+
+<!-- ════════════════════════════════════ HERO ════════════════════════════════════ -->
+<section class="hero">
+  <div class="grid-bg"></div>
+
+  <div class="hero-badge">
+    <span class="pulse"></span>
+    Browser as a service &nbsp;/&nbsp; pnv.one
+  </div>
+
+  <h1>
+    Automate the browser.<br>
+    <span class="h1-blue glitch" data-text="No code. No AI.">No code. No AI.</span><br>
+    No surprises.
+  </h1>
+
+  <p class="hero-sub">
+    pnv records everything you do in a cloud browser, lets you pick the steps you want to repeat, and replays them exactly — every time.
+  </p>
+
+  <div class="hero-ctas">
+    <a href="https://pnv.one" class="btn btn-primary">Get started free</a>
+    <a href="#how-it-works" class="btn btn-ghost">See how it works</a>
+  </div>
+
+  <!-- Terminal / transcript mockup -->
+  <div class="terminal">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="terminal-bar">
+      <span class="terminal-title">INTERACTION_TRANSCRIPT &nbsp;//&nbsp; profile-01 / web-01</span>
+      <div class="dots">
+        <span style="background:#ef4444"></span>
+        <span style="background:#f59e0b"></span>
+        <span style="background:#22c55e"></span>
+      </div>
+    </div>
+
+    <div class="terminal-body">
+      <div class="t-row header">
+        <span>#</span>
+        <span>ACTION</span>
+        <span>DETAIL</span>
+        <span>STATUS</span>
+      </div>
+      <div class="t-row">
+        <span class="t-idx">01</span>
+        <span class="t-action">navigate</span>
+        <span class="t-detail">app.acme.com/login</span>
+        <span class="t-ok">OK</span>
+      </div>
+      <div class="t-row sel">
+        <span class="t-idx">02</span>
+        <span class="t-action">type</span>
+        <span class="t-detail">email &nbsp;→ <span class="var">&#123;&#123;email&#125;&#125;</span></span>
+        <span class="t-sel-label">SELECTED</span>
+      </div>
+      <div class="t-row sel">
+        <span class="t-idx">03</span>
+        <span class="t-action">type</span>
+        <span class="t-detail">password → <span class="var">&#123;&#123;password&#125;&#125;</span></span>
+        <span class="t-sel-label">SELECTED</span>
+      </div>
+      <div class="t-row sel">
+        <span class="t-idx">04</span>
+        <span class="t-action">click</span>
+        <span class="t-detail">button[data-id="login-btn"]</span>
+        <span class="t-sel-label">SELECTED</span>
+      </div>
+      <div class="t-row">
+        <span class="t-idx">05</span>
+        <span class="t-action">wait</span>
+        <span class="t-detail">dashboard.loaded</span>
+        <span class="t-ok">OK</span>
+      </div>
+    </div>
+
+    <div class="terminal-footer">
+      <span style="color:var(--blue);font-size:11px;letter-spacing:.08em">▸ 3 STEPS SELECTED &nbsp;&nbsp; 2 VARIABLES DETECTED</span>
+      <span class="convert">CONVERT TO TASK</span>
+    </div>
+  </div>
+
+  <p class="hero-note">No credit card &nbsp;·&nbsp; No code &nbsp;·&nbsp; 2 minutes to your first task</p>
+</section>
+
+
+<hr class="divider">
+
+
+<!-- ═══════════════════════════════════ PROBLEM ══════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">The problem</div>
+  <h2>Browser automation is broken<br>for everyone except engineers.</h2>
+  <p class="section-sub">Every existing tool forces a trade-off between control and complexity. You end up writing code, prompting an AI, or giving up.</p>
+
+  <div class="prob-grid">
+    <div class="prob-card">
+      <span class="prob-num">ERR_01</span>
+      <div class="prob-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </div>
+      <h3>Writing code</h3>
+      <p>Playwright and Selenium give full control — at the cost of hours writing selectors, handling waits, and maintaining scripts every time the UI changes.</p>
+    </div>
+    <div class="prob-card">
+      <span class="prob-num">ERR_02</span>
+      <div class="prob-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h3>Prompting AI agents</h3>
+      <p>AI browser agents are unpredictable by design. They decide what to do at runtime — which means silent failures, unexpected paths, and results that differ every run.</p>
+    </div>
+    <div class="prob-card">
+      <span class="prob-num">ERR_03</span>
+      <div class="prob-icon">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <h3>The shared flaw</h3>
+      <p>Both approaches separate the <em>doing</em> from the <em>automating</em>. You describe what you want in a different format from actually doing it. That gap is where time and bugs live.</p>
+    </div>
+  </div>
+</div>
+
+
+<hr class="divider">
+
+
+<!-- ═══════════════════════════════════ SOLUTION ═════════════════════════════════ -->
+<div class="section">
+  <div class="sol-grid">
+    <div class="sol-text">
+      <div class="section-label">The solution</div>
+      <h2>Do it once. pnv turns the doing into the automation.</h2>
+      <p>pnv gives you a cloud browser with full session isolation. Interact with any site the way you normally would. Every click, input, and navigation is captured in a live transcript.</p>
+      <p>When you're done, select the steps you want to reuse. pnv detects your inputs and converts them into variables automatically. Run the same task with different values — on demand or on schedule.</p>
+      <p>No code. No LLM in the execution path. Just deterministic replay — the same result, every time.</p>
+    </div>
+
+    <div class="data-panel">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+      <div class="data-panel-label">TASK_STATUS &nbsp;// &nbsp;login-automation</div>
+      <div class="data-row">
+        <span class="d-key">execution_mode</span>
+        <span class="d-val blue">DETERMINISTIC</span>
+      </div>
+      <div class="data-row">
+        <span class="d-key">ai_in_loop</span>
+        <span class="d-val red">FALSE</span>
+      </div>
+      <div class="data-row">
+        <span class="d-key">steps_recorded</span>
+        <span class="d-val">3</span>
+      </div>
+      <div class="data-row">
+        <span class="d-key">variables</span>
+        <span class="d-val blue">email, password</span>
+      </div>
+      <div class="data-row">
+        <span class="d-key">last_run_status</span>
+        <span class="d-val green">SUCCESS</span>
+      </div>
+      <div class="data-row prog-row">
+        <span class="d-key">success_rate</span>
+        <div class="progress-wrap">
+          <div class="prog-meta">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--white)">100 runs</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--green)">100.0%</span>
+          </div>
+          <div class="progress-track" style="margin-top:6px">
+            <div class="progress-fill" style="--w:100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<hr class="divider">
+
+
+<!-- ═══════════════════════════════════ FEATURES ═════════════════════════════════ -->
+<div class="section" id="features">
+  <div class="section-label">Features</div>
+  <h2>Everything you need to automate<br>the browser. Nothing you don't.</h2>
+  <p class="section-sub">Built for engineers who ship things that have to work.</p>
+
+  <div class="feat-grid">
+    <div class="feat-card wide" data-num="01">
+      <span class="feat-num">01</span>
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      </div>
+      <h3>Isolated cloud browser profiles</h3>
+      <p>Each profile has its own cookies, sessions, and environment. Log into multiple accounts simultaneously without interference. Your automation state stays exactly where you left it — no shared state, no credential leakage between profiles.</p>
+    </div>
+
+    <div class="feat-card">
+      <span class="feat-num">02</span>
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <h3>Full interaction transcript</h3>
+      <p>Every click, input, scroll, and navigation is recorded automatically in a live transcript. Nothing is missed. The transcript is the source of truth.</p>
+    </div>
+
+    <div class="feat-card">
+      <span class="feat-num">03</span>
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>Guaranteed deterministic replay</h3>
+      <p>No LLM. No interpretation. pnv executes the exact steps you recorded, in exact order. Same result every time. If the page changes, you'll know immediately — not after a silent failure in production.</p>
+    </div>
+
+    <div class="feat-card">
+      <span class="feat-num">04</span>
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <h3>One-click task creation</h3>
+      <p>Select steps from your transcript. pnv detects inputs automatically and converts them into variables. No selectors to write. No scripting required.</p>
+    </div>
+
+    <div class="feat-card">
+      <span class="feat-num">05</span>
+      <div class="feat-icon">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3>On-demand and scheduled runs</h3>
+      <p>Run tasks manually with any variable values, or schedule them to run automatically. One task. Unlimited executions. Different inputs each time.</p>
+    </div>
+  </div>
+</div>
+
+
+<hr class="divider">
+
+
+<!-- ═══════════════════════════════════ SOCIAL PROOF ═════════════════════════════ -->
+<div class="section">
+  <div class="section-label">Why pnv</div>
+  <h2>Built for engineers who are<br>done guessing.</h2>
+  <p class="section-sub">Zero AI in the execution path. What you recorded is what runs.</p>
+
+  <div class="trust-grid">
+    <div class="trust-card">
+      <div class="trust-metric">100%</div>
+      <div class="trust-label">Deterministic execution. No LLM, no interpretation, no variance between runs.</div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-metric">0</div>
+      <div class="trust-label">Lines of code required. Interact normally. pnv handles the rest.</div>
+    </div>
+    <div class="trust-card">
+      <div class="trust-metric">∞</div>
+      <div class="trust-label">Executions from one recorded task. Different inputs each time, same reliable result.</div>
+    </div>
+  </div>
+
+  <div class="quote-block">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-br"></div>
+    <p class="quote-text">"The only browser automation I've seen that I actually trust to run in production. No AI making decisions I didn't authorize, no scripts breaking when the UI changes — just the exact workflow I recorded, every time."</p>
+    <div class="quote-author">— ENGINEERING LEAD &nbsp;//&nbsp; EARLY ACCESS TESTER</div>
+  </div>
+</div>
+
+
+<hr class="divider">
+
+
+<!-- ═══════════════════════════════════ HOW IT WORKS ═════════════════════════════ -->
+<div class="section" id="how-it-works">
+  <div class="section-label">How it works</div>
+  <h2>From first interaction to automated<br>workflow in 4 steps.</h2>
+  <p class="section-sub" style="margin-bottom:80px">No setup ceremony. No config files. No learning curve.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Create a browser profile</h3>
+      <p>Set up a cloud browser with its own isolated session. Login state, cookies, and environment are scoped to this profile.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>Open a web and interact</h3>
+      <p>Add any site to your profile. Browse it normally. pnv records every step in a live transcript as you go.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Build your task</h3>
+      <p>Select the steps you want to automate. pnv identifies your inputs and turns them into variables automatically.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Replay on demand</h3>
+      <p>Run the task with any variable values, any time. Schedule it to run automatically. Same result every time.</p>
+    </div>
+  </div>
+</div>
+
+
+<hr class="divider">
+
+
+<!-- ═══════════════════════════════════ PRICING ══════════════════════════════════ -->
+<div class="section" id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2>Start free. Scale when you're ready.</h2>
+  <p class="section-sub">No credit card on the free tier. Profiles are always free and unlimited.</p>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <p class="pricing-tier">Free</p>
+      <p class="pricing-price">$0<sub>&nbsp;/ month</sub></p>
+      <p class="pricing-desc">Forever free. No credit card required.</p>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-items">
+        <li>1 concurrent web</li>
+        <li>3 tasks</li>
+        <li>Variables</li>
+        <li>Full interaction transcript</li>
+      </ul>
+      <a href="https://pnv.one" class="btn btn-ghost" style="width:100%;justify-content:center">Get started</a>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Most popular</div>
+      <p class="pricing-tier">Pro</p>
+      <p class="pricing-price">$10<sub>&nbsp;/ month</sub></p>
+      <p class="pricing-desc">For individual engineers and automation builders.</p>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-items">
+        <li>5 concurrent webs</li>
+        <li>Unlimited tasks</li>
+        <li>Variables</li>
+        <li>Scheduled runs</li>
+        <li>Full interaction transcript</li>
+      </ul>
+      <a href="https://pnv.one" class="btn btn-primary" style="width:100%;justify-content:center">Start Pro</a>
+    </div>
+
+    <div class="pricing-card">
+      <p class="pricing-tier">Team</p>
+      <p class="pricing-price">$15<sub>&nbsp;/ month</sub></p>
+      <p class="pricing-desc">For QA teams and ops teams running at scale.</p>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-items">
+        <li>20 concurrent webs</li>
+        <li>Unlimited tasks</li>
+        <li>Variables</li>
+        <li>Scheduled runs</li>
+        <li>Full interaction transcript</li>
+      </ul>
+      <a href="https://pnv.one" class="btn btn-ghost" style="width:100%;justify-content:center">Start Team</a>
+    </div>
+  </div>
+
+  <p class="pricing-note">
+    Concurrent webs = active browser contexts using cloud CPU and memory.
+    Profiles store only config, cookies, and session data — always free, always unlimited.
+  </p>
+</div>
+
+
+<hr class="divider">
+
+
+<!-- ═══════════════════════════════════ FAQ ══════════════════════════════════════ -->
+<div class="section" id="faq">
+  <div class="section-label">FAQ</div>
+  <h2>Common questions.</h2>
+
+  <div class="faq">
+    <div class="faq-item">
+      <button class="faq-q" onclick="faq(this)">
+        How is pnv different from Playwright or Selenium?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">With Playwright and Selenium, you write code that describes what to do. With pnv, you just do it — and pnv records the steps. No scripting, no selectors, no maintenance every time the UI shifts.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faq(this)">
+        How is pnv different from AI browser agents like Browser Use or Browserbase?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">AI agents decide what to do at runtime — flexible, but unpredictable. pnv replays exactly what you recorded, deterministically. There is no AI in the execution path. If you need the same result every time, pnv is the right tool.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faq(this)">
+        What counts as a "concurrent web"?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">A web is an active browser context running inside a profile — it uses cloud CPU and memory. Profiles only store config, cookies, and session data, so they're free and unlimited. You're billed based on how many webs you run simultaneously.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faq(this)">
+        What happens if the website I'm automating changes its layout?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">pnv detects that the recorded step can't complete as expected and surfaces the error clearly. You'll know immediately — not after a silent failure. You can update the affected steps without rebuilding the whole task.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faq(this)">
+        Can I automate sites that require login?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Yes. Each browser profile maintains its own cookies and session state. Log in once, and the session persists in the profile. Your tasks run with that session intact — no re-authentication needed on every run.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════ CTA ══════════════════════════════════════ -->
+<div class="cta-wrap">
+  <div class="grid-bg"></div>
+  <div class="cta-glow"></div>
+
+  <div class="section-label">Ready to ship</div>
+  <h2>Your next automation is<br>one interaction away.</h2>
+  <p>Stop writing scripts that break. Stop prompting AI that guesses. Interact once, replay forever.</p>
+
+  <div class="cta-btns">
+    <a href="https://pnv.one" class="btn btn-primary" style="font-size:15px;padding:14px 30px">Get started free</a>
+    <a href="https://github.com/pnv-one" class="btn btn-ghost" style="font-size:15px;padding:14px 30px">View on GitHub</a>
+  </div>
+
+  <p class="cta-note">No credit card &nbsp;·&nbsp; No code &nbsp;·&nbsp; 2 minutes to your first task</p>
+</div>
+
+
+<!-- ═══════════════════════════════════ FOOTER ════════════════════════════════════ -->
+<div class="footer-wrap">
+  <footer>
+    <div>
+      <div class="footer-brand">pnv</div>
+      <div class="footer-sub">Browser as a service &nbsp;·&nbsp; Built by Rizky from Indonesia</div>
+    </div>
+    <div class="footer-links">
+      <a href="https://pnv.one">pnv.one</a>
+      <a href="https://github.com/pnv-one">GitHub</a>
+    </div>
+  </footer>
+</div>
+
+
+<script>
+  function faq(btn) {
+    const item = btn.parentElement;
+    const icon = btn.querySelector('.faq-icon');
+    const open = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(el => {
+      el.classList.remove('open');
+      el.querySelector('.faq-icon').textContent = '+';
+    });
+    if (!open) {
+      item.classList.add('open');
+      icon.textContent = '-';
+    }
+  }
+</script>
+
+</body>
+</html>
